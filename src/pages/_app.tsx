@@ -37,7 +37,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           name="description"
           content="AI-powered learning platform for effortless skill acquisition and enjoyable knowledge growth."
         />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="any" />
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Solway&family=Alata&display=swap"
           rel="stylesheet"
