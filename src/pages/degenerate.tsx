@@ -1,10 +1,13 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Navbar from "../components/Navbar";
-import styles from "../styles/Generate.module.css";
+import styles from "../styles/Degen.module.css";
 import Lottie from "lottie-react";
 import wrongAnimation from "../../public/wrong.json";
 import correctAnimation from "../../public/correct.json";
+import { getResponse, McqItem } from "../lib/actions/getResponse";
 
 const loadingMessages = [
   "Patience is virtue...",
@@ -13,48 +16,18 @@ const loadingMessages = [
   "Good things take time.. ;)",
 ];
 
-type QuizData = {
-  question: string;
-  options: string[];
-  correctAnswer: number;
-};
-
-const dummyQuizData: QuizData[] = [
-  {
-    question: "What was the name of the ashram Gandhi founded?",
-    options: [
-      "Sabarmati Ashram",
-      "Gandhi Ashram",
-      "Phoenix Ashram",
-      "All of the above",
-    ],
-    correctAnswer: 3,
-  },
-  {
-    question:
-      "What was Gandhi's main objective in his struggle against British rule?",
-    options: [
-      "To establish an independent India",
-      "To achieve economic equality",
-      "To reform Hinduism",
-      "To create a socialist society",
-    ],
-    correctAnswer: 0,
-  },
-];
-
-const GeneratePage: React.FC = () => {
+const DegeneratePage: React.FC = () => {
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
-  const [quizData, setQuizData] = useState<QuizData[]>([]);
+  const [quizData, setQuizData] = useState<McqItem[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
   const [timer, setTimer] = useState(10);
-  const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [score, setScore] = useState(0);
   const [quizEnded, setQuizEnded] = useState(false);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
   useEffect(() => {
     if (isLoading) {
@@ -98,19 +71,26 @@ const GeneratePage: React.FC = () => {
     setScore(0);
     setQuizEnded(false);
 
-    // Simulating API call
-    setTimeout(() => {
-      setQuizData(dummyQuizData);
+    try {
+      const response = await getResponse(inputText);
+      if (response && Array.isArray(response)) {
+        setQuizData(response.slice(0, 10)); // Limit to 10 questions
+      } else {
+        throw new Error("Invalid response format");
+      }
+    } catch (error) {
+      console.error("Error generating quiz:", error);
+    } finally {
       setIsLoading(false);
       setTimer(10);
-    }, 5000);
+    }
   };
 
   const handleAnswerSelect = (index: number) => {
     setSelectedAnswer(index);
     setShowAnswer(true);
-    if (index === quizData[currentQuestionIndex].correctAnswer) {
-      setScore((prevScore) => prevScore + 1);
+    if (index === parseInt(quizData[currentQuestionIndex].answer) - 1) {
+      setScore(score + 1);
     }
   };
 
@@ -172,7 +152,7 @@ const GeneratePage: React.FC = () => {
           <p className={styles.loadingMessage}>{loadingMessage}</p>
         </div>
       )}
-      {quizData.length > 0 && !quizEnded && (
+      {quizData.length > 0 && currentQuestion && !quizEnded && (
         <div
           className={`${styles.quizContainer} ${
             showAnswer ? styles.flipped : ""
@@ -180,7 +160,12 @@ const GeneratePage: React.FC = () => {
         >
           <div className={styles.cardFront}>
             <h2 className={styles.question}>{currentQuestion.question}</h2>
-            {currentQuestion.options.map((option, index) => (
+            {[
+              currentQuestion.choice1,
+              currentQuestion.choice2,
+              currentQuestion.choice3,
+              currentQuestion.choice4,
+            ].map((option, index) => (
               <div
                 key={index}
                 className={`${styles.option} ${
@@ -200,36 +185,31 @@ const GeneratePage: React.FC = () => {
             </div>
           </div>
           <div className={styles.cardBack}>
-            {selectedAnswer === currentQuestion.correctAnswer ? (
-              <div className={styles.correctAnswer}>
-                <h2 className={styles.answerResult}>Correct Answer</h2>
-                <div className={styles.wrongIcon}>
-                  <Lottie
-                    animationData={correctAnimation}
-                    loop={true}
-                    style={{ width: 200, height: 200 }}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className={styles.correctAnswer}>
-                <h2 className={styles.answerResult}>Wrong Answer</h2>
-                <div className={styles.wrongIcon}>
-                  <Lottie
-                    animationData={wrongAnimation}
-                    loop={true}
-                    style={{ width: 200, height: 200 }}
-                  />
-                </div>
-              </div>
-            )}
-            <h3 className={styles.correctAnswerTitle}>Correct Answer</h3>
-            <div className={styles.correctOption}>
-              <div className={styles.optionBackground}>
-                <span>
-                  {currentQuestion.options[currentQuestion.correctAnswer]}
-                </span>
-              </div>
+            <h2 className={styles.answerResult}>
+              {selectedAnswer === parseInt(currentQuestion.answer) - 1
+                ? "Correct Answer"
+                : "Wrong Answer"}
+            </h2>
+            <Lottie
+              animationData={
+                selectedAnswer === parseInt(currentQuestion.answer) - 1
+                  ? correctAnimation
+                  : wrongAnimation
+              }
+              loop={true}
+              style={{ width: 200, height: 200 }}
+            />
+            <div className={styles.answerExplanation}>
+              <p>
+                <strong>Correct Answer:</strong>{" "}
+                {currentQuestion[`choice${currentQuestion.answer}`]}
+              </p>
+              {selectedAnswer !== parseInt(currentQuestion.answer) - 1 && (
+                <p>
+                  <strong>Your Answer:</strong>{" "}
+                  {currentQuestion[`choice${selectedAnswer! + 1}`]}
+                </p>
+              )}
             </div>
             <button className={styles.nextButton} onClick={handleNextQuestion}>
               Next Question
@@ -247,7 +227,7 @@ const GeneratePage: React.FC = () => {
             onClick={() => window.location.reload()}
             className={styles.restartButton}
           >
-            Retake Quiz
+            Start New Quiz
           </button>
         </div>
       )}
@@ -259,4 +239,4 @@ const GeneratePage: React.FC = () => {
   );
 };
 
-export default GeneratePage;
+export default DegeneratePage;

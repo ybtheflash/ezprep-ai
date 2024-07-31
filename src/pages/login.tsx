@@ -76,11 +76,11 @@ const LoginPage: React.FC = () => {
         </div>
 
         <button className={styles.googleButton}>
-          <img
+          {/* <img
             src="/google-icon.svg"
             alt="Google Icon"
             className={styles.googleIcon}
-          />
+          /> */}
           <span>Sign in with Google</span>
         </button>
 
