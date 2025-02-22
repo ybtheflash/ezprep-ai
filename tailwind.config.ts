@@ -59,7 +59,13 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+			'deep-brown': '#6d4a29',
+        'light-green': '#8BC34A',
+        'off-white': '#fcf3e4',
+        'medium-brown': '#8b5e34',
+        'beige': '#DFD2BC'
+
   	}
   },
   plugins: [require("tailwindcss-animate")],
