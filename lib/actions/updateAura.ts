@@ -1,18 +1,18 @@
-// "use server"
+"use server"
 
-// import { getServerSession } from "next-auth";
-// import { authOptions } from "../auth";
-// import prisma from "../db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth";
+import connectDB from "../db";
+import User from "@/models/user";
 
-// export async function updateAura(aura: number) {
-//   const session = await getServerSession(authOptions);
-//   if (!session) {
-//     return null;
-//   }
-//   const response = await prisma.user.update({
-//     where: { id: Number(session.user.id) },
-//     data: {
-//       aura: aura
-//     }
-//   })
-// }
+export async function updateAura(aura: number) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return null;
+  }
+  await connectDB();
+  const response = await User.findOneAndUpdate(
+    { _id: session.user.id },
+    { $inc: { aura: aura } }
+  );
+}

@@ -6,6 +6,7 @@ import { getQuestions } from "@/lib/actions/getQuestions";
 import { createFlashcardHistory } from "@/lib/actions/createFlashcardHistory";
 import { getScores } from "@/lib/actions/getScores";
 import jsPDF from "jspdf";
+import { updateAura } from "@/lib/actions/updateAura";
 
 const MCQQuiz = () => {
   useEffect(() => {
@@ -98,8 +99,15 @@ const MCQQuiz = () => {
 
   const finishQuiz = async () => {
     await createFlashcardHistory(topic, score, questions.length);
-    setAura((score/questions.length)*5);
-    console.log(aura);
+    console.log(score, questions.length);
+    const newAura = Math.floor((score / questions.length) * 5);
+    console.log(newAura);
+    setAura(newAura);
+    console.log("before update");
+    console.log(newAura);
+    await updateAura(newAura);
+    console.log("after update");
+    console.log(newAura);
     setQuizComplete(true);
   };
 

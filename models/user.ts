@@ -22,7 +22,7 @@ const userSchema = new Schema<IUser>({
   password: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   aura: { type: Number, default: 0 },
-  coins: { type: Number, default: 50 },
+  coins: { type: Number, default: 50, min: 0 },
   currentStreak: { type: Number, default: 0 },
   longestStreak: { type: Number, default: 0 },
   lastActiveDate: Date,
