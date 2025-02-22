@@ -12,6 +12,7 @@ interface IUser extends Document {
   currentStreak: number;
   longestStreak: number;
   lastActiveDate?: Date;
+  isAdmin: boolean;
 }
 
 const userSchema = new Schema<IUser>({
@@ -26,6 +27,7 @@ const userSchema = new Schema<IUser>({
   currentStreak: { type: Number, default: 0 },
   longestStreak: { type: Number, default: 0 },
   lastActiveDate: Date,
+  isAdmin: { type: Boolean, default: false },
 });
 
 // Check if model already exists

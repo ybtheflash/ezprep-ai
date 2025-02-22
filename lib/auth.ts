@@ -15,6 +15,7 @@ declare module "next-auth" {
       email: string;
       phone: string;
       image?: string;
+      isAdmin: boolean
     } & DefaultSession["user"];
   }
 
@@ -24,6 +25,7 @@ declare module "next-auth" {
     email: string;
     username: string;
     phone: string;
+    isAdmin: boolean;
   }
 }
 
@@ -45,7 +47,7 @@ export const authOptions: NextAuthOptions = {
 
         // Find user by email
         const user = await User.findOne({ email: credentials.email.toLowerCase() })
-          .select('id name email username phone password');
+          .select('id name email username phone password isAdmin'); // Add isAdmin to selected fields
 
         if (!user) {
           throw new Error("Invalid credentials");
@@ -67,7 +69,8 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           username: user.username,
-          phone: user.phone
+          phone: user.phone,
+          isAdmin: user.isAdmin
         };
       },
     })
@@ -85,6 +88,7 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
         token.username = user.username;
         token.phone = user.phone;
+        token.isAdmin = user.isAdmin;
       }
       return token;
     },
@@ -95,6 +99,7 @@ export const authOptions: NextAuthOptions = {
         email: token.email as string,
         username: token.username as string,
         phone: token.phone as string,
+        isAdmin: token.isAdmin as boolean,
       };
       return session;
     }

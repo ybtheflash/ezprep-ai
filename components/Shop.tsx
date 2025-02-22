@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { redeemCode } from "@/lib/actions/redeemCode";
 import { getUser } from "@/lib/actions/getUser";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface User {
   name: string;
@@ -10,9 +12,12 @@ interface User {
 
 export function Shop() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [redeemCode, setRedeemCode] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [redeemInput, setRedeemInput] = useState("");
+  const [status, setStatus] = useState<{
+    type: "success" | "error" | null;
+    message: string;
+    coins?: number;
+  }>({ type: null, message: "" });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,35 +36,46 @@ export function Shop() {
 
   const handleRedeem = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    setStatus({ type: null, message: "" });
 
-    if (!redeemCode.trim()) {
-      setError("Please enter a redemption code");
-      return;
-    }
+    const result = await redeemCode(redeemInput);
 
-    // Simulate API call
-    try {
-      // Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setSuccess("Code redeemed successfully! 500 EzCoins added to your account");
-      setRedeemCode("");
-    } catch (err) {
-      setError("Invalid or expired redemption code");
+    if (result.success) {
+      setStatus({
+        type: "success",
+        message: result.message,
+        coins: result.coins,
+      });
+      setRedeemInput("");
+      // Refresh user data
+      const user = await getUser();
+      setCurrentUser(user);
+    } else {
+      setStatus({
+        type: "error",
+        message: result.message,
+      });
     }
   };
 
   const purchaseCoins = async (amount: number) => {
-    setError("");
-    setSuccess("");
-    
+    setStatus({ type: null, message: "" });
+
     try {
       // Replace with actual purchase API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setSuccess(`Successfully purchased ${amount} EzCoins!`);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setStatus({
+        type: "success",
+        message: `Successfully purchased ${amount} EzCoins!`,
+      });
+      // Refresh user data
+      const user = await getUser();
+      setCurrentUser(user);
     } catch (err) {
-      setError("Purchase failed. Please try again.");
+      setStatus({
+        type: "error",
+        message: "Purchase failed. Please try again.",
+      });
     }
   };
 
@@ -84,23 +100,27 @@ export function Shop() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-          {[100, 500, 1000].map((amount) => (
+          {[
+            { amount: 100, price: 10 },
+            { amount: 500, price: 45 },
+            { amount: 1000, price: 80 },
+          ].map((packageInfo) => (
             <div
-              key={amount}
+              key={packageInfo.amount}
               className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
             >
               <div className="flex flex-col items-center gap-2">
                 <span className="text-2xl font-bold text-[#8b5e34]">
-                  {amount}
+                  {packageInfo.amount}
                 </span>
                 <span className="text-gray-600">EzCoins</span>
                 <button
-                  onClick={() => purchaseCoins(amount)}
+                  onClick={() => purchaseCoins(packageInfo.amount)}
                   className="w-full mt-2 bg-[#8b5e34] text-white py-2 rounded hover:bg-[#76533a] transition-colors"
                 >
-                  ₹{amount / 5}.00
+                  ${packageInfo.price}.00
                 </button>
-                {amount === 500 && (
+                {packageInfo.amount === 500 && (
                   <span className="text-xs text-green-600 mt-1">Best Value</span>
                 )}
               </div>
@@ -120,8 +140,8 @@ export function Shop() {
           <form onSubmit={handleRedeem} className="flex gap-2">
             <input
               type="text"
-              value={redeemCode}
-              onChange={(e) => setRedeemCode(e.target.value)}
+              value={redeemInput}
+              onChange={(e) => setRedeemInput(e.target.value)}
               placeholder="Enter redemption code"
               className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#8b5e34]"
             />
@@ -133,8 +153,18 @@ export function Shop() {
             </button>
           </form>
 
-          {error && <div className="text-red-500 mt-2">{error}</div>}
-          {success && <div className="text-green-600 mt-2">{success}</div>}
+          {status.type === "error" && (
+            <div className="text-red-500 mt-2">{status.message}</div>
+          )}
+
+          {status.type === "success" && (
+            <div className="text-green-600 mt-2">
+              <p>{status.message}</p>
+              {status.coins !== undefined && (
+                <p className="mt-1">New balance: {status.coins} EzCoins</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
