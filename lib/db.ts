@@ -1,4 +1,4 @@
-import 'dotenv/config';
+
 import mongoose from 'mongoose';
 // Add error handling for undefined environment variable
 const MONGODB_URI = process.env.MONGODB_URL;
