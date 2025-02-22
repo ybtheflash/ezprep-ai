@@ -1,6 +1,11 @@
+import 'dotenv/config';
 import mongoose from 'mongoose';
+// Add error handling for undefined environment variable
+const MONGODB_URI = process.env.MONGODB_URL;
 
-const MONGODB_URI = process.env.MONGODB_URL!;
+if (!MONGODB_URI) {
+  throw new Error('Please define the MONGODB_URL environment variable inside .env');
+}
 
 declare global {
   var mongoose: any;
@@ -16,7 +21,13 @@ async function connectDB() {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI).then((mongoose) => mongoose);
+    cached.promise = mongoose
+      .connect(MONGODB_URI as string)
+      .then((mongoose) => mongoose)
+      .catch((err) => {
+        console.error('MongoDB connection error:', err);
+        throw err;
+      });
   }
 
   cached.conn = await cached.promise;

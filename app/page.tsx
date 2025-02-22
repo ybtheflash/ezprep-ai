@@ -6,7 +6,7 @@ import { Navbar } from "@/components/Navbar"
 import { Footer } from "@/components/Footer"
 import { Button } from "@/components/ui/button"
 import HeroVideoDialog from "@/components/magicui/hero-video-dialog"
-
+import 'dotenv/config';
 export default function Home() {
   const [activeSection, setActiveSection] = useState("flashcards")
 

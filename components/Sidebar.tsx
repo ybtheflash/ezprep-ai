@@ -100,13 +100,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             <aside
                 id="sidebar"
                 className={`
-          fixed lg:static inset-y-0 left-0 z-30
-          flex flex-col bg-[#DFD2BC]
-          transition-all duration-300 ease-in-out
-          ${isOpen ? 'w-64' : 'w-20'}
-          ${isOpen ? 'translate-x-0' : '-translate-x-[calc(100% - 5rem)] lg:translate-x-0'}
-          flex lg:flex
-       `}
+            fixed lg:static inset-y-0 left-0 z-30
+            flex flex-col bg-[#DFD2BC]
+            transition-all duration-300 ease-in-out
+            ${isOpen ? 'w-64' : 'w-20'}
+            ${isOpen ? 'translate-x-0' : '-translate-x-[calc(100% - 5rem)] lg:translate-x-0'}
+            flex lg:flex
+    `}
                 onClick={handleSidebarClick}
             >
                 {/* Logo Section */}

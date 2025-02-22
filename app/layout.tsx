@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Gloock, Alata } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/lib/providers";
 import RootLayoutWrapper from "@/components/RootLayout";
-
+import 'dotenv/config';
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
