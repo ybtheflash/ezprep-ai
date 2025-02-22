@@ -9,12 +9,13 @@ import {
     BookOpen,
     Headphones,
     Video,
-    FileText,
     Settings,
     MessageSquare,
     Home,
     LogOut,
-    X
+    X,
+    Trophy,
+    ShoppingBag
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 
@@ -34,8 +35,9 @@ const navItems: NavItem[] = [
     { icon: <BookOpen size={20} />, label: 'Flashcards', path: '/flashcard' },
     { icon: <Headphones size={20} />, label: 'Podcast Library', path: '/podcast' },
     { icon: <Video size={20} />, label: 'Video Learning', path: '/videolearning' },
-    { icon: <FileText size={20} />, label: 'Document Tools', path: '/document' },
     { icon: <MessageSquare size={20} />, label: 'AI Chat', path: '/chat' },
+    { icon: <Trophy size={20} />, label: 'Leaderboard', path: '/leaderboard' },
+    { icon: <ShoppingBag size={20} />, label: 'Shop', path: '/shop' },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {

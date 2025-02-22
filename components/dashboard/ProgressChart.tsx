@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { DashboardCard } from '../ui/dashboard-card'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 // Mock data - in a real app, this would come from an API/database
 const mockData = [
@@ -15,27 +16,6 @@ const mockData = [
 ]
 
 export function ProgressChart() {
-  // Chart dimensions
-  const width = 600
-  const height = 300
-  const padding = 40
-  
-  // Calculate max values for scaling
-  const maxAura = Math.max(...mockData.map(d => d.aura))
-  const maxCoins = Math.max(...mockData.map(d => d.coins))
-  
-  // Generate points for both lines
-  const getPoints = (data: number[]) => {
-    return mockData.map((d, i) => {
-      const x = padding + (i * ((width - (2 * padding)) / (mockData.length - 1)))
-      const y = height - padding - ((data[i] / Math.max(...data)) * (height - (2 * padding)))
-      return `${x},${y}`
-    }).join(' ')
-  }
-
-  const auraPoints = getPoints(mockData.map(d => d.aura))
-  const coinPoints = getPoints(mockData.map(d => d.coins))
-
   return (
     <DashboardCard title="Weekly Progress" className="col-span-4">
       <div className="space-y-4">
@@ -50,114 +30,84 @@ export function ProgressChart() {
           </div>
         </div>
         
-        <div className="w-full overflow-x-auto bg-white/50 rounded-lg p-4 border-2 border-[#DFD2BC]">
-          <svg width={width} height={height} className="w-full h-auto">
-            {/* Grid lines */}
-            {[...Array(5)].map((_, i) => (
-              <line
-                key={`grid-${i}`}
-                x1={padding}
-                y1={padding + (i * (height - 2 * padding) / 4)}
-                x2={width - padding}
-                y2={padding + (i * (height - 2 * padding) / 4)}
-                stroke="#DFD2BC"
-                strokeWidth="1"
-                strokeDasharray="4,4"
+        <div className="w-full h-[280px] overflow-x-auto bg-white/50 rounded-lg p-4 border-2 border-[#DFD2BC]">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={mockData}
+              margin={{
+                top: 20,
+                right: 30,
+                left: 20,
+                bottom: 10,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#DFD2BC" />
+              <XAxis
+                dataKey="day"
+                tick={{ fill: '#8b5e34' }}
+                stroke="#8b5e34"
               />
-            ))}
-            
-            {/* Axes */}
-            <line
-              x1={padding}
-              y1={padding}
-              x2={padding}
-              y2={height - padding}
-              stroke="#8b5e34"
-              strokeWidth="2"
-            />
-            <line
-              x1={padding}
-              y1={height - padding}
-              x2={width - padding}
-              y2={height - padding}
-              stroke="#8b5e34"
-              strokeWidth="2"
-            />
-            
-            {/* Data lines */}
-            <polyline
-              points={auraPoints}
-              fill="none"
-              stroke="#8b5e34"
-              strokeWidth="3"
-              className="drop-shadow-md"
-            />
-            <polyline
-              points={coinPoints}
-              fill="none"
-              stroke="#DFD2BC"
-              strokeWidth="3"
-              className="drop-shadow-md"
-            />
-            
-            {/* Data points and labels */}
-            {mockData.map((d, i) => {
-              const x = padding + (i * ((width - (2 * padding)) / (mockData.length - 1)))
-              const yAura = height - padding - ((d.aura / maxAura) * (height - (2 * padding)))
-              const yCoins = height - padding - ((d.coins / maxCoins) * (height - (2 * padding)))
-              
-              return (
-                <g key={i}>
-                  {/* Aura points */}
-                  <circle
-                    cx={x}
-                    cy={yAura}
-                    r="4"
-                    fill="#8b5e34"
-                    className="drop-shadow"
-                  />
-                  <text
-                    x={x}
-                    y={yAura - 10}
-                    textAnchor="middle"
-                    fill="#8b5e34"
-                    className="text-xs font-medium"
-                  >
-                    {d.aura}
-                  </text>
-                  
-                  {/* Coin points */}
-                  <circle
-                    cx={x}
-                    cy={yCoins}
-                    r="4"
-                    fill="#DFD2BC"
-                    className="drop-shadow"
-                  />
-                  <text
-                    x={x}
-                    y={yCoins - 10}
-                    textAnchor="middle"
-                    fill="#6d4a29"
-                    className="text-xs font-medium"
-                  >
-                    {d.coins}
-                  </text>
-                  
-                  {/* Day labels */}
-                  <text
-                    x={x}
-                    y={height - padding + 20}
-                    textAnchor="middle"
-                    fill="#8b5e34"
-                    className="text-sm font-medium"
-                  >
-                    {d.day}
-                  </text>
-                </g>
-              )
-            })}
-          </svg>
+              <YAxis
+                yAxisId="left"
+                tick={{ fill: '#8b5e34' }}
+                stroke="#8b5e34"
+                domain={[0, 'auto']}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                tick={{ fill: '#8b5e34' }}
+                stroke="#8b5e34"
+                domain={[0, 'auto']}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  border: '1px solid #DFD2BC',
+                  borderRadius: '0.5rem',
+                }}
+                labelStyle={{ color: '#8b5e34' }}
+              />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="aura"
+                stroke="#8b5e34"
+                strokeWidth={3}
+                dot={{
+                  fill: '#8b5e34',
+                  stroke: '#8b5e34',
+                  strokeWidth: 2,
+                  r: 4,
+                }}
+                activeDot={{
+                  fill: '#8b5e34',
+                  stroke: '#fff',
+                  strokeWidth: 2,
+                  r: 6,
+                }}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="coins"
+                stroke="#DFD2BC"
+                strokeWidth={3}
+                dot={{
+                  fill: '#DFD2BC',
+                  stroke: '#DFD2BC',
+                  strokeWidth: 2,
+                  r: 4,
+                }}
+                activeDot={{
+                  fill: '#DFD2BC',
+                  stroke: '#fff',
+                  strokeWidth: 2,
+                  r: 6,
+                }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </DashboardCard>
