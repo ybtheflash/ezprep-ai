@@ -1,44 +1,32 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react';
-import '@dotlottie/player-component';
+import { Player } from '@lottiefiles/react-lottie-player';
 import WaveLoading from './WaveLoading';
 import { DialogueTurn, PodcastPlayerProps } from '@/types/podcast';
 import { ArrowDownTrayIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { useTTS } from '@/hooks/useTTS';
+
+// Import your Lottie JSON files
+import SpeakerOneAnimation from '../public/lottie/speaker-one.json';
+import SpeakerTwoAnimation from '../public/lottie/speaker-two.json';
 
 export default function PodcastPlayer({ conversation, isGenerating, children }: PodcastPlayerProps) {
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSpeaker, setCurrentSpeaker] = useState<'user' | 'assistant' | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [audioQueue, setAudioQueue] = useState<HTMLAudioElement[]>([]);
   const conversationRef = useRef<HTMLDivElement>(null);
   const playerOneRef = useRef<any>(null);
   const playerTwoRef = useRef<any>(null);
+  const { speak, isLoading: isTTSLoading, error: ttsError } = useTTS();
 
   useEffect(() => {
-    const loadVoices = () => {
-      const availableVoices = window.speechSynthesis.getVoices();
-      const maleVoices = availableVoices.filter(
-        voice => voice.lang.startsWith('en-') && voice.name.toLowerCase().includes('male')
-      );
-      // Ensure we get two different voices
-      const distinctVoices = maleVoices.reduce((acc, voice) => {
-        if (acc.length < 2 && !acc.some(v => v.name === voice.name)) {
-          acc.push(voice);
-        }
-        return acc;
-      }, [] as SpeechSynthesisVoice[]);
-      setVoices(distinctVoices);
-    };
-
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-
     playerOneRef.current = document.querySelector('#speakerOne');
     playerTwoRef.current = document.querySelector('#speakerTwo');
 
     return () => {
-      speechSynthesis.cancel();
+      audioQueue.forEach(audio => audio.pause());
     };
   }, []);
 
@@ -66,58 +54,58 @@ export default function PodcastPlayer({ conversation, isGenerating, children }: 
   };
 
   const playFromPosition = async (startIndex: number) => {
-    if (!voices.length || voices.length < 2) return;
-    
-    speechSynthesis.cancel();
     setIsPlaying(true);
     setCurrentIndex(startIndex);
 
-    for (let i = startIndex; i < conversation.length; i++) {
-      if (!isPlaying) break;
-      
-      const message = conversation[i];
-      setCurrentSpeaker(message.role);
-      setCurrentIndex(i);
-      scrollToMessage(i);
-      toggleAnimation(message.role);
+    try {
+      for (let i = startIndex; i < conversation.length; i++) {
+        if (!isPlaying) break;
+        
+        const message = conversation[i];
+        setCurrentSpeaker(message.role);
+        setCurrentIndex(i);
+        scrollToMessage(i);
+        toggleAnimation(message.role);
 
-      try {
-        await new Promise<void>((resolve, reject) => {
-          const utterance = new SpeechSynthesisUtterance(message.content);
-          utterance.voice = message.role === 'user' ? voices[0] : voices[1];
-          // Different voice characteristics for each speaker
-          if (message.role === 'user') {
-            utterance.pitch = 1.0;
-            utterance.rate = 1.0;
-          } else {
-            utterance.pitch = 0.9;
-            utterance.rate = 0.95;
-          }
-          
-          utterance.onend = () => resolve();
-          utterance.onerror = () => reject(new Error('Speech synthesis failed'));
-          
-          speechSynthesis.speak(utterance);
+        const audioSrc = await speak({
+          text: message.content,
+          speaker: message.role
         });
-      } catch (error) {
-        console.error('Speech synthesis failed, trying next message');
-        continue;
-      }
-    }
 
-    setIsPlaying(false);
-    setCurrentSpeaker(null);
-    setCurrentIndex(-1);
-    toggleAnimation(null);
+        const audio = new Audio(audioSrc);
+        setAudioQueue(prev => [...prev, audio]);
+
+        await new Promise<void>((resolve) => {
+          audio.play();
+          audio.onended = () => {
+            URL.revokeObjectURL(audioSrc);
+            resolve();
+          };
+          audio.onerror = () => {
+            console.error('Audio playback failed');
+            resolve();
+          };
+        });
+      }
+    } catch (error) {
+      console.error('Playback error:', error);
+    } finally {
+      setIsPlaying(false);
+      setCurrentSpeaker(null);
+      setCurrentIndex(-1);
+      toggleAnimation(null);
+      setAudioQueue([]);
+    }
   };
+
   const pausePlayback = () => {
-    speechSynthesis.pause();
+    audioQueue.forEach(audio => audio.pause());
     setIsPlaying(false);
     toggleAnimation(null);
   };
 
   const resumePlayback = () => {
-    speechSynthesis.resume();
+    audioQueue.forEach(audio => audio.play());
     setIsPlaying(true);
     toggleAnimation(currentSpeaker);
   };
@@ -159,13 +147,12 @@ export default function PodcastPlayer({ conversation, isGenerating, children }: 
         <div className="flex justify-between items-center mb-8">
           <div className="text-center">
             <div className="w-40 h-40 mb-4">
-              {/* @ts-ignore */}
-              <dotlottie-player
-                id="speakerOne"
-                src="/lottie/speaker-one.lottie"
+              <Player
+                ref={playerOneRef}
                 autoplay={false}
                 loop
-                mode="normal"
+                speed={1}
+                src={SpeakerOneAnimation}
                 style={{ width: '100%', height: '100%' }}
               />
             </div>
@@ -175,13 +162,12 @@ export default function PodcastPlayer({ conversation, isGenerating, children }: 
           </div>
           <div className="text-center">
             <div className="w-40 h-40 mb-4">
-              {/* @ts-ignore */}
-              <dotlottie-player
-                id="speakerTwo"
-                src="/lottie/speaker-two.lottie"
+              <Player
+                ref={playerTwoRef}
                 autoplay={false}
                 loop
-                mode="normal"
+                speed={1}
+                src={SpeakerTwoAnimation}
                 style={{ width: '100%', height: '100%' }}
               />
             </div>
@@ -196,8 +182,15 @@ export default function PodcastPlayer({ conversation, isGenerating, children }: 
           <button
             onClick={isPlaying ? pausePlayback : () => playFromPosition(0)}
             className="px-8 py-4 bg-[#292828] text-white rounded-full hover:opacity-90 transition-opacity font-medium text-lg"
+            disabled={isTTSLoading}
           >
-            {isPlaying ? 'Pause' : 'Play Conversation'}
+            {isTTSLoading ? (
+              <span className="animate-pulse">Loading...</span>
+            ) : isPlaying ? (
+              'Pause'
+            ) : (
+              'Play Conversation'
+            )}
           </button>
           <button
             onClick={downloadAudio}
@@ -206,6 +199,12 @@ export default function PodcastPlayer({ conversation, isGenerating, children }: 
             <ArrowDownTrayIcon className="w-6 h-6" />
           </button>
         </div>
+
+        {ttsError && (
+          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+            Error: {ttsError}
+          </div>
+        )}
 
         {/* Scrollable Transcript */}
         <div className="max-h-[500px] overflow-y-auto custom-scrollbar rounded-xl bg-white/50 p-4">

@@ -4,12 +4,12 @@ const nextConfig = {
       serverActions: {
         allowedOrigins: [
           'localhost:3000',
-          'musical-cod-gw9xrr7ww4fvwr7-3000.app.github.dev',
-          'https://musical-cod-gw9xrr7ww4fvwr7.github.dev/'
+          'fictional-doodle-j9vg6rjg46whjq-3000.app.github.dev',
+          'https://fictional-doodle-j9vg6rjg46whjq-3000.app.github.dev/'
         ],
         allowedForwardedHosts: [
-          'musical-cod-gw9xrr7ww4fvwr7-3000.app.github.dev',
-          'https://musical-cod-gw9xrr7ww4fvwr7.github.dev/'
+          'https://fictional-doodle-j9vg6rjg46whjq-3000.app.github.dev/',
+          'fictional-doodle-j9vg6rjg46whjq-3000.app.github.dev'
         ]
       }
     }
