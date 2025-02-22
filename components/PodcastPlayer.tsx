@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react';
-import '@dotlottie/player-component';
+import Lottie from 'lottie-react';
 import WaveLoading from './WaveLoading';
 import { DialogueTurn, PodcastPlayerProps } from '@/types/podcast';
 import { ArrowDownTrayIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
@@ -34,9 +34,6 @@ export default function PodcastPlayer({ conversation, isGenerating, children }: 
     loadVoices();
     window.speechSynthesis.onvoiceschanged = loadVoices;
 
-    playerOneRef.current = document.querySelector('#speakerOne');
-    playerTwoRef.current = document.querySelector('#speakerTwo');
-
     return () => {
       speechSynthesis.cancel();
     };
@@ -55,13 +52,13 @@ export default function PodcastPlayer({ conversation, isGenerating, children }: 
   const toggleAnimation = (speaker: 'user' | 'assistant' | null) => {
     if (speaker === 'user') {
       playerOneRef.current?.play();
-      playerTwoRef.current?.stop();
+      playerTwoRef.current?.pause();
     } else if (speaker === 'assistant') {
       playerTwoRef.current?.play();
-      playerOneRef.current?.stop();
+      playerOneRef.current?.pause();
     } else {
-      playerOneRef.current?.stop();
-      playerTwoRef.current?.stop();
+      playerOneRef.current?.pause();
+      playerTwoRef.current?.pause();
     }
   };
 
@@ -110,6 +107,7 @@ export default function PodcastPlayer({ conversation, isGenerating, children }: 
     setCurrentIndex(-1);
     toggleAnimation(null);
   };
+
   const pausePlayback = () => {
     speechSynthesis.pause();
     setIsPlaying(false);
@@ -159,13 +157,11 @@ export default function PodcastPlayer({ conversation, isGenerating, children }: 
         <div className="flex justify-between items-center mb-8">
           <div className="text-center">
             <div className="w-40 h-40 mb-4">
-              {/* @ts-ignore */}
-              <dotlottie-player
-                id="speakerOne"
-                src="/lottie/speaker-one.lottie"
+              <Lottie
+                lottieRef={playerOneRef}
+                animationData="/lottie/speaker-one.json" // Direct path to JSON in public directory
+                loop={true}
                 autoplay={false}
-                loop
-                mode="normal"
                 style={{ width: '100%', height: '100%' }}
               />
             </div>
@@ -175,13 +171,11 @@ export default function PodcastPlayer({ conversation, isGenerating, children }: 
           </div>
           <div className="text-center">
             <div className="w-40 h-40 mb-4">
-              {/* @ts-ignore */}
-              <dotlottie-player
-                id="speakerTwo"
-                src="/lottie/speaker-two.lottie"
+              <Lottie
+                lottieRef={playerTwoRef}
+                animationData="/lottie/speaker-two.json" // Direct path to JSON in public directory
+                loop={true}
                 autoplay={false}
-                loop
-                mode="normal"
                 style={{ width: '100%', height: '100%' }}
               />
             </div>
