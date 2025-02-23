@@ -1,5 +1,5 @@
 import { DashboardCalendar } from '@/components/dashboard/DashboardCalendar';
-import { LeaderboardPreview } from '@/components/dashboard/LeaderboardPreview';
+import { LeaderboardPreview } from '@/components/dashbbard/LeaderboardPreview';
 import { ProgressChart } from '@/components/dashboard/ProgressChart';
 import { UserStats } from '@/components/dashboard/UserStats';
 import { DailyQuote } from '@/components/dashboard/DailyQuote';

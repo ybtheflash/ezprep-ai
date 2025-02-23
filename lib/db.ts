@@ -8,7 +8,11 @@ if (!MONGODB_URI) {
 }
 
 declare global {
-  var mongoose: any;
+  namespace NodeJS {
+    interface Global {
+      mongoose: { conn: mongoose.Connection | null, promise: Promise<mongoose.Mongoose> | null };
+    }
+  }
 }
 
 let cached = global.mongoose;
