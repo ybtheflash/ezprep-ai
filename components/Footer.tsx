@@ -102,7 +102,7 @@ export function Footer() {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Image 
-                src="/images/Graduation-Cap.png"
+                src="/images/Phantom2.gif"
                 alt="ezPrep Logo" 
                 width={24} 
                 height={24} 
