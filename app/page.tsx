@@ -83,67 +83,16 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Feature Cards */}
-          <div className="max-w-7xl mx-auto relative p-8">
-            <div className="grid grid-cols-4 gap-6">
-              {/* Audio Card */}
-              <div className="bg-[#FEFCD1] rounded-xl p-8 transform rotate-[-5deg] hover:scale-105 transition-all cursor-pointer">
-                <div className="text-sm text-black mb-3">Learn efficiently with AI</div>
-                <div className="h-28 bg-black/10 rounded-lg mb-6 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-[#292828] rounded-full" />
-                </div>
-                <p className="text-base">Yeah! India is my favorite country in the whole world 🧡🤍💚</p>
-              </div>
-              {/* Progress Card */}
-              <div className="bg-[#E1F6FF] rounded-xl p-8 transform rotate-[5deg] hover:scale-105 transition-all cursor-pointer">
-                <div className="text-xs text-black mb-2">Know your progress</div>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">⭐</span>
-                  <span className="font-medium">Rookie</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="text-center">
-                    <div className="text-2xl font-medium">420</div>
-                    <div className="text-xs text-black">points earned</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-medium">4420</div>
-                    <div className="text-xs text-black">minutes in app</div>
-                  </div>
-                </div>
-              </div>
-              {/* Calendar Card */}
-              <div className="bg-[#FFE1F9] rounded-xl p-8 transform rotate-[-5deg] hover:scale-105 transition-all cursor-pointer">
-                <div className="text-sm text-black mb-3">Plan your lessons</div>
-                <p className="text-center mb-6 font-medium text-base">December 2022</p>
-                <div className="grid grid-cols-7 gap-2 text-sm">
-                  {[...Array(31)].map((_, i) => (
-                    <div key={i} className="w-6 h-6 flex items-center justify-center">
-                      {i + 1}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {/* Leaderboard Card */}
-              <div className="bg-[#D1FFE4] rounded-xl p-8 transform rotate-[5deg] hover:scale-105 transition-all cursor-pointer">
-                <div className="text-sm text-black mb-3">Compete with others</div>
-                <div className="space-y-4">
-                  {[
-                    { score: "24331", name: "Artem A." },
-                    { score: "16742", name: "Daniel S." },
-                    { score: "15919", name: "Daniella M." },
-                    { score: "16534", name: "Dima L." },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-200" />
-                        <span className="text-base">{item.name}</span>
-                      </div>
-                      <span className="text-base font-medium">{item.score}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {/* Feature Image */}
+          <div className="max-w-7xl mx-auto text-center">
+            <div className="inline-block hover:scale-105 transition-all duration-300 cursor-pointer">
+              <Image
+                src="/images/4pic.png"
+                alt="Feature showcase"
+                width={1200}
+                height={600}
+                priority
+              />
             </div>
           </div>
           
@@ -175,10 +124,10 @@ export default function Home() {
           <div className="grid grid-cols-2 gap-12 max-w-5xl mx-auto">
             <div className="space-y-6">
               {[
-                { id: "flashcards", label: "flashcards", icon: "✏️", video: "/videos/flashcards.mp4" },
-                { id: "ai-podcasts", label: "ai podcasts", icon: "🔗", video: "/videos/podcasts.mp4" },
-                { id: "leaderboards", label: "leaderboards", icon: "🏆", video: "/videos/leaderboards.mp4" },
-                { id: "ezperks", label: "ezperks", icon: "🤑", video: "/videos/ezperks.mp4" },
+                { id: "leaderboards", label: "leaderboards", icon: "🏆", image: "/images/leaderboards.png" },
+                { id: "flashcards", label: "flashcards", icon: "✏️", image: "/images/flashcard.png" },
+                { id: "ai-podcasts", label: "ai podcasts", icon: "🔗", image: "/images/podcast.png" },
+                { id: "griddle", label: "Griddle", icon: "🎮", image: "/images/Griddle.png" },
               ].map(({ id, label, icon }) => (
                 <button
                   key={id}
@@ -195,14 +144,23 @@ export default function Home() {
             </div>
             <div>
               <div className="bg-[#E5DDD3] rounded-xl overflow-hidden h-[400px]">
-                <video
-                  key={activeSection}
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  muted
-                  loop
-                  src={`/videos/${activeSection}.mp4`}
-                />
+                {[
+                  { id: "leaderboards", image: "/images/leaderboards.png" },
+                  { id: "flashcards", image: "/images/flashcard.png" },
+                  { id: "ai-podcasts", image: "/images/podcast.png" },
+                  { id: "griddle", image: "/images/Griddle.png" },
+                ].map((item) => (
+                  activeSection === item.id && (
+                    <Image
+                      key={item.id}
+                      src={item.image}
+                      alt={`${item.id} feature`}
+                      width={600}
+                      height={400}
+                      className="w-full h-full object-cover"
+                    />
+                  )
+                ))}
               </div>
             </div>
           </div>

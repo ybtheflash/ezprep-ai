@@ -6,8 +6,8 @@ const nextConfig = {
     // Fix for ONNX runtime
     config.resolve.alias['onnxruntime-node'] = false;
 
-    // Add alias for @
-    config.resolve.alias['@'] = path.resolve(__dirname);
+    // Fix for ONNX runtime
+    config.resolve.alias['onnxruntime-node'] = path.resolve(__dirname, 'node_modules/onnxruntime-node');
 
     return config;
   },
