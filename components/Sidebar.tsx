@@ -45,7 +45,6 @@ const navItems: NavItem[] = [
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     const router = useRouter();
     const pathname = usePathname();
-    
     const [isMobile, setIsMobile] = React.useState(false); // Track mobile state
 
     React.useEffect(() => {
@@ -61,8 +60,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         };
     }, []);
 
+
     const isActivePath = (path: string) => {
+        // Handle root dashboard path
         if (path === '/dashboard' && pathname === '/dashboard') return true;
+        // Handle other paths, checking if they're in the current pathname
         return path !== '/dashboard' && pathname.includes(path);
     };
 
@@ -87,6 +89,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       }
     };
 
+
     return (
         <>
             {/* Mobile Overlay */}
@@ -97,121 +100,122 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                 />
             )}
 
-            {/* Large Screen Sidebar */}
-            {!isMobile && (
-                <aside
-                    id="sidebar"
-                    className={`
-                        fixed lg:static inset-y-0 left-0 z-30
-                        flex flex-col bg-[#DFD2BC]
-                        transition-all duration-300 ease-in-out
-                        ${isOpen ? 'w-64' : 'w-20'}
-                        ${isOpen ? 'translate-x-0' : '-translate-x-[calc(100% - 5rem)] lg:translate-x-0'}
-                        lg:flex lg:flex-col lg:h-full
-                    `}
-                    onClick={handleSidebarClick}
-                >
-                    {/* Logo Section */}
-                    <div className={`flex items-center h-16 px-4 border-b border-gray-200`}>
-                        <Link href="/dashboard" className="flex items-center gap-2">
-                            <Image
-                                src="/images/Graduation-Cap.png"
-                                alt="ezPrep Logo"
-                                width={24}
-                                height={24}
-                            />
-                            {/* Removed EzPrep.ai text when expanded */}
-                            {isOpen && <span className="font-gloock">EzPrep.ai</span>}
-                        </Link>
-                        {/* X Button (Visible only when expanded) */}
+            {/* Sidebar */}
+            <aside
+                id="sidebar"
+                className={`
+            fixed lg:static inset-y-0 left-0 z-30
+            flex flex-col bg-[#DFD2BC]
+            transition-all duration-300 ease-in-out
+            ${isOpen ? 'w-64' : 'w-20'}
+            ${isOpen ? 'translate-x-0' : '-translate-x-[calc(100% - 5rem)] lg:translate-x-0'}
+            flex lg:flex
+    `}
+                onClick={handleSidebarClick}
+            >
+                {/* Logo Section */}
+                <div className={`flex items-center h-16 px-4 border-b border-gray-200 ${isMobile && !isOpen ? 'justify-center' : ''}`}>
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                        <Image
+                            src="/images/Graduation-Cap.png"
+                            alt="ezPrep Logo"
+                            width={24}
+                            height={24}
+                        />
                         {isOpen && (
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="ml-auto lg:hidden text-[#8b5e34] hover:text-[#6d4a29]"
-                            >
-                                <X size={20} />
-                            </button>
+                            <span className="font-gloock">
+                                EzPrep.ai
+                            </span>
                         )}
-                    </div>
+                    </Link>
+                    {/* X Button (Visible only when expanded) */}
+                    {isOpen && (
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="ml-auto lg:hidden text-[#8b5e34] hover:text-[#6d4a29]"
+                        >
+                            <X size={20} />
+                        </button>
+                    )}
+                </div>
 
-                    {/* Navigation Items */}
-                    <nav className={`flex-1 p-2 space-y-1`}>
-                        {navItems.map((item) => (
-                            <button
-                                key={item.path}
-                                onClick={() => router.push(item.path)}
-                                className={`
-                                    flex items-center px-3 py-3 rounded-lg
-                                    transition-all duration-200
-                                    ${isActivePath(item.path)
-                                        ? 'bg-[#e6c199] text-[#8b5e34]'
-                                        : 'text-[#8b5e34] hover:bg-[#e6c199] hover:bg-opacity-50'
-                                    }
-                                    w-full
-                                `}
-                            >
-                                <span className={`flex-shrink-0 ${isActivePath(item.path) ? 'text-[#8b5e34]' : 'text-[#8b5e34]'}`}>
-                                    {item.icon}
+                {/* Navigation Items */}
+                <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+                    {navItems.map((item) => (
+                        <button
+                            key={item.path}
+                            onClick={() => router.push(item.path)}
+                            className={`
+                w-full flex items-center px-3 py-3 rounded-lg
+                transition-all duration-200
+                ${isActivePath(item.path)
+                                ? 'bg-[#e6c199] text-[#8b5e34]'
+                                : 'text-[#8b5e34] hover:bg-[#e6c199] hover:bg-opacity-50'
+                            }
+                ${!isOpen && 'justify-center'}
+            `}
+                        >
+                            <span className={`flex-shrink-0 ${isActivePath(item.path) ? 'text-[#8b5e34]' : 'text-[#8b5e34]'}`}>
+                                {item.icon}
+                            </span>
+                            {isOpen && (
+                                <span className="ml-3 font-medium whitespace-nowrap overflow-hidden">
+                                    {item.label}
                                 </span>
-                                {isOpen && (
-                                    <span className="ml-3 font-medium whitespace-nowrap overflow-hidden">
-                                        {item.label}
-                                    </span>
-                                )}
-                            </button>
-                        ))}
-                    </nav>
+                            )}
+                        </button>
+                    ))}
+                </nav>
 
-                    {/* Settings Button */}
-                    <button
-                        onClick={() => router.push('/settings')}
-                        className={`
-                            flex items-center px-3 py-3 mx-2 mt-2 rounded-lg
-                            text-[#8b5e34] hover:bg-[#e6c199] hover:bg-opacity-50
-                            transition-all duration-200
-                        `}
-                    >
-                        <Settings size={20} />
-                        {isOpen && <span className="ml-3 font-medium">Settings</span>}
-                    </button>
+                {/* Settings Button */}
+                <button
+                    onClick={() => router.push('/settings')}
+                    className={`
+            flex items-center px-3 py-3 mx-2 mt-2 rounded-lg
+            text-[#8b5e34] hover:bg-[#e6c199] hover:bg-opacity-50
+            transition-all duration-200
+            ${!isOpen && 'justify-center'}
+        `}
+                >
+                    <Settings size={20} />
+                    {isOpen && <span className="ml-3 font-medium">Settings</span>}
+                </button>
 
-                    {/* Logout Button */}
-                    <button
-                        onClick={async () => {
-                            await signOut();
-                            router.push('/login');
-                        }}
-                        className={`
-                            flex items-center px-3 py-3 m-2 rounded-lg
-                            text-[#8b5e34] hover:bg-[#e6c199] hover:bg-opacity-50
-                            transition-all duration-200
-                        `}
-                    >
-                        <LogOut size={20} />
-                        {isOpen && <span className="ml-3 font-medium">Logout</span>}
-                    </button>
+                {/* Logout Button */}
+                <button
+                    onClick={async() => {
+                        // Add logout logic here
+                        await signOut();
+                        router.push('/login');
+                    }}
+                    className={`
+            flex items-center px-3 py-3 m-2 rounded-lg
+            text-[#8b5e34] hover:bg-[#e6c199] hover:bg-opacity-50
+            transition-all duration-200
+            ${!isOpen && 'justify-center'}
+        `}
+                >
+                    <LogOut size={20} />
+                    {isOpen && <span className="ml-3 font-medium">Logout</span>}
+                </button>
 
-                    {/* Toggle Button for Mobile View */}
+                {/* Toggle Button */}
+                {true && (
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className={`absolute top-4 -right-3 flex w-6 h-6 rounded-full bg-[#DFD2BC] border border-[#e6c199] items-center justify-center text-[#8b5e34] hover:text-[#6d4a29] shadow-sm hover:shadow transition-all duration-200 lg:hidden`}
+                        className="
+            absolute top-4 -right-3 flex
+            w-6 h-6 rounded-full bg-[#DFD2BC] border border-[#e6c199]
+            items-center justify-center
+            text-[#8b5e34] hover:text-[#6d4a29]
+            shadow-sm hover:shadow
+            transition-all duration-200
+            lg:hidden "
                     >
                         <ChevronRight size={14} className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
-                </aside>
-            )}
-
-            {/* Bottom Scrollable Sidebar for Mobile Devices */}
-            {isMobile && (
-                <div className={`fixed bottom-0 left-0 right-0 z-[100] bg-[#DFD2BC] p-2 flex overflow-x-auto border-t border-gray-200 shadow-md`}>
-                    {navItems.map((item) => (
-                        <button key={item.path} onClick={() => router.push(item.path)} className={`flex flex-col items-center text-[#8b5e34] mx-2`}>
-                            {item.icon}
-                            <span className="text-xs">{item.label}</span>
-                        </button>
-                    ))}
-                </div>
-            )}
+                )}
+            </aside>
         </>
     );
 };
