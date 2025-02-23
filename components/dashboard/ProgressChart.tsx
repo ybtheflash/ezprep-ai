@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { DashboardCard } from '../ui/dashboard-card'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // Mock data - in a real app, this would come from an API/database
 const mockData = [

@@ -15,7 +15,8 @@ import {
     LogOut,
     X,
     Trophy,
-    ShoppingBag
+    ShoppingBag,
+    Mic
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 
@@ -35,6 +36,7 @@ const navItems: NavItem[] = [
     { icon: <BookOpen size={20} />, label: 'Flashcards', path: '/flashcard' },
     { icon: <Headphones size={20} />, label: 'Podcast Library', path: '/podcast' },
     { icon: <Video size={20} />, label: 'Video Learning', path: '/videolearning' },
+    { icon: <Mic size={20} />, label: 'Transcribe', path: '/transcribe' },
     { icon: <MessageSquare size={20} />, label: 'AI Chat', path: '/chat' },
     { icon: <Trophy size={20} />, label: 'Leaderboard', path: '/leaderboard' },
     { icon: <ShoppingBag size={20} />, label: 'Shop', path: '/shop' },
@@ -151,7 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                                 : 'text-[#8b5e34] hover:bg-[#e6c199] hover:bg-opacity-50'
                             }
                 ${!isOpen && 'justify-center'}
-              `}
+            `}
                         >
                             <span className={`flex-shrink-0 ${isActivePath(item.path) ? 'text-[#8b5e34]' : 'text-[#8b5e34]'}`}>
                                 {item.icon}
@@ -173,7 +175,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             text-[#8b5e34] hover:bg-[#e6c199] hover:bg-opacity-50
             transition-all duration-200
             ${!isOpen && 'justify-center'}
-          `}
+        `}
                 >
                     <Settings size={20} />
                     {isOpen && <span className="ml-3 font-medium">Settings</span>}
@@ -191,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             text-[#8b5e34] hover:bg-[#e6c199] hover:bg-opacity-50
             transition-all duration-200
             ${!isOpen && 'justify-center'}
-          `}
+        `}
                 >
                     <LogOut size={20} />
                     {isOpen && <span className="ml-3 font-medium">Logout</span>}
@@ -208,7 +210,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             text-[#8b5e34] hover:text-[#6d4a29]
             shadow-sm hover:shadow
             transition-all duration-200
-          "
+            lg:hidden "
                     >
                         <ChevronRight size={14} className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
