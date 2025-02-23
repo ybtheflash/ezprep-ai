@@ -233,7 +233,7 @@ export function WordleGame() {
           textShadow: '2px 2px 0 #DFD2BC, 4px 4px 0 #8b5e34'
         }}
       >
-        EZ WORDLE
+        EZ GRIDDLE
       </h1>
 
       {message && (

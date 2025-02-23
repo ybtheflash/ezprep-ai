@@ -60,7 +60,7 @@ export function UserStats() {
           <span className="text-sm text-[#6d4a29]">Aura Points</span>
           <div className="flex items-center gap-2">
             <Image
-              src="/images/Graduation-Cap.png"
+              src="/images/aura.png"
               alt="Aura Points"
               width={24}
               height={24}

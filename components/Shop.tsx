@@ -66,7 +66,7 @@ export function Shop() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setStatus({
         type: "success",
-        message: `Successfully purchased ${amount} EzCoins!`,
+        message: `Successfully purchased ₹{amount} EzCoins!`,
       });
       // Refresh user data
       const user = await getUser();
@@ -118,7 +118,7 @@ export function Shop() {
                   onClick={() => purchaseCoins(packageInfo.amount)}
                   className="w-full mt-2 bg-[#8b5e34] text-white py-2 rounded hover:bg-[#76533a] transition-colors"
                 >
-                  ${packageInfo.price}.00
+                  ₹{packageInfo.price}.00
                 </button>
                 {packageInfo.amount === 500 && (
                   <span className="text-xs text-green-600 mt-1">Best Value</span>
