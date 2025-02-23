@@ -1,21 +1,64 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { DashboardCard } from '../ui/dashboard-card'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-// Mock data - in a real app, this would come from an API/database
-const mockData = [
-  { day: 'Mon', aura: 85, coins: 20 },
-  { day: 'Tue', aura: 120, coins: 35 },
-  { day: 'Wed', aura: 95, coins: 25 },
-  { day: 'Thu', aura: 150, coins: 45 },
-  { day: 'Fri', aura: 130, coins: 40 },
-  { day: 'Sat', aura: 110, coins: 30 },
-  { day: 'Sun', aura: 140, coins: 42 },
-]
+interface ProgressData {
+  day: string
+  aura: number
+  coins: number
+}
 
 export function ProgressChart() {
+  const [chartData, setChartData] = useState<ProgressData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchProgressData = async () => {
+      try {
+        const response = await fetch('/api/user/progress')
+        if (!response.ok) {
+          throw new Error('Failed to fetch progress data')
+        }
+        const data = await response.json()
+        setChartData(data)
+      } catch (err) {
+        console.error('Error fetching progress:', err)
+        setError('Failed to load progress data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProgressData()
+  }, [])
+
+  const maxAura = chartData.length > 0 
+    ? Math.ceil(Math.max(...chartData.map(d => d.aura)) * 1.1) // Add 10% padding
+    : 10; // Default to 10 if no data
+
+  if (loading) {
+    return (
+      <DashboardCard title="Weekly Progress" className="col-span-4">
+        <div className="h-[280px] flex items-center justify-center">
+          <div className="retro-loading"></div>
+        </div>
+      </DashboardCard>
+    )
+  }
+
+  if (error) {
+    return (
+      <DashboardCard title="Weekly Progress" className="col-span-4">
+        <div className="h-[280px] flex items-center justify-center text-red-500">
+          {error}
+        </div>
+      </DashboardCard>
+    )
+  }
+
   return (
     <DashboardCard title="Weekly Progress" className="col-span-4">
       <div className="space-y-4">
@@ -33,7 +76,7 @@ export function ProgressChart() {
         <div className="w-full h-[280px] overflow-x-auto bg-white/50 rounded-lg p-4 border-2 border-[#DFD2BC]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              data={mockData}
+              data={chartData}
               margin={{
                 top: 20,
                 right: 30,
@@ -41,6 +84,7 @@ export function ProgressChart() {
                 bottom: 10,
               }}
             >
+              {/* Keep existing chart configuration */}
               <CartesianGrid strokeDasharray="3 3" stroke="#DFD2BC" />
               <XAxis
                 dataKey="day"
@@ -51,14 +95,14 @@ export function ProgressChart() {
                 yAxisId="left"
                 tick={{ fill: '#8b5e34' }}
                 stroke="#8b5e34"
-                domain={[0, 'auto']}
+                domain={[0, maxAura]}
               />
               <YAxis
                 yAxisId="right"
                 orientation="right"
                 tick={{ fill: '#8b5e34' }}
                 stroke="#8b5e34"
-                domain={[0, 'auto']}
+                domain={[0, maxAura]}
               />
               <Tooltip
                 contentStyle={{

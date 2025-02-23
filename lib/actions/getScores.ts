@@ -4,55 +4,61 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth";
 import { redirect } from "next/navigation";
 import connectDB from "../db";
+import FlashcardHistory from "@/models/flashCardHistory";
+
+// Define interfaces at the top for clarity
+interface RawScore {
+  _id: any;
+  createdAt: Date | string;
+  userId?: string;
+  keyword: string;
+  score: number;
+  questions: any;
+}
+
+interface SerializedScore {
+  _id: string;
+  createdAt: string;
+  userId: string;
+  keyword: string;
+  score: number;
+  questions: any;
+}
 
 export async function getScores() {
   try {
     // Get the session
     const session = await getServerSession(authOptions);
 
-    // Redirect to login if no session exists
-    if (!session) {
+    // Redirect or return empty array if no session/users found
+    if (!session || !session.user) {
       redirect("/login");
+      return [];
     }
 
-    // Connect to MongoDB
-    const { db } = await connectDB();
+    // Use email as the unique identifier for the query
+    const userIdentifier = session.user.email;
+    console.log("User identifier:", userIdentifier);
 
-    // Fetch flashcard history for the specific user
-    const scores = await db
-      .collection("flashcardhistories")
-      .find({
-        userId: session.user?.email, // Using email as userId since it's unique
-      })
-      .sort({ createdAt: -1 }) // Sort by newest first
-      .limit(10) // Limit to last 10 entries
-      .toArray();
+    // Establish DB connection
+    await connectDB();
 
-    interface RawScore {
-      _id: any;
-      createdAt: Date | string;
-      userId?: string;
-      keyword: string;
-      score: number;
-      questions: any;
-    }
+    // Fetch flashcard histories using the Mongoose model
+    const scores = await FlashcardHistory.find({ userId: userIdentifier })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
 
-    interface SerializedScore {
-      _id: string;
-      createdAt: string;
-      userId: string;
-      keyword: string;
-      score: number;
-      questions: any;
-    }
+    console.log("Fetched scores:", scores);
 
-    const serializedScores = scores.map((score: RawScore): SerializedScore => ({
+    // Iterate over each flashcard history and serialize the result
+    const serializedScores: SerializedScore[] = (scores as unknown as RawScore[]).map((score) => ({
       _id: score._id.toString(),
       createdAt:
         score.createdAt instanceof Date
           ? score.createdAt.toISOString()
           : String(score.createdAt),
-      userId: score.userId || session.user?.email || "",
+      userId: score.userId || userIdentifier,
       keyword: score.keyword,
       score: score.score,
       questions: score.questions,
@@ -61,7 +67,6 @@ export async function getScores() {
     return serializedScores;
   } catch (error) {
     console.error("Error fetching scores:", error);
-    // Return empty array instead of throwing error
     return [];
   }
 }

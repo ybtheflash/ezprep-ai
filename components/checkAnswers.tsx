@@ -7,6 +7,7 @@ import { createFlashcardHistory } from "@/lib/actions/createFlashcardHistory";
 import { getScores } from "@/lib/actions/getScores";
 import jsPDF from "jspdf";
 import { updateAura } from "@/lib/actions/updateAura";
+import { updateAuraAndDailyProgress } from "@/lib/actions/updateAuraAndDailyProgess";
 
 const MCQQuiz = () => {
   useEffect(() => {
@@ -106,6 +107,12 @@ const MCQQuiz = () => {
     console.log("before update");
     console.log(newAura);
     await updateAura(newAura);
+    const response = await updateAuraAndDailyProgress(newAura);
+    if(response.success) {
+      console.log("Aura and Daily Progress updated successfully");
+    }else {
+      console.log("Failed to update Aura and Daily Progress", response.error);
+    }
     console.log("after update");
     console.log(newAura);
     setQuizComplete(true);
@@ -304,8 +311,8 @@ const MCQQuiz = () => {
                 </Button>
               </div>
             </div>
-            <div className="bg-gradient-to-b from-[#fef5e7]/50 to-[#fef5e7]/30 backdrop-blur-md rounded-2xl p-8 shadow-lg border border-[#e6c199]/30">
-              <h2 className="text-2xl font-bold text-[#8b5e34] mb-6">Recent Quizzes</h2>
+            <div className="">
+              {/* <h2 className="text-2xl font-bold text-[#8b5e34] mb-6">Recent Quizzes</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {flashcardHistory.slice(-4).map((history) => (
                   <div
@@ -318,7 +325,7 @@ const MCQQuiz = () => {
                     <div className="text-sm text-[#8b5e34]/80">Keyword: {history.keyword}</div>
                   </div>
                 ))}
-              </div>
+              </div> */}
             </div>
           </div>
         ) : (
