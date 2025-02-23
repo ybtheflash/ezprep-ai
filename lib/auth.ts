@@ -3,7 +3,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import connectDB from "@/lib/db"; // Import Mongoose connection // Import Mongoose User model
-import { DefaultSession, User as NextAuthUser } from "next-auth";
+import { DefaultSession } from "next-auth";
 import User from "@/models/user";
 
 declare module "next-auth" {
