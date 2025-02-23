@@ -7,6 +7,7 @@ import { authOptions } from '@/lib/auth';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import React from 'react';
+import { WeeklyQuests } from '@/components/Quests';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -34,6 +35,9 @@ export default async function DashboardPage() {
         </div>
         <div className="md:col-span-2">
           <LeaderboardPreview />
+        </div>
+        <div className="md:col-span-6">
+          <WeeklyQuests />
         </div>
 
         <div className="md:col-span-6">

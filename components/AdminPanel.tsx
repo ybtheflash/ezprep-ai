@@ -2,6 +2,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { createRedemptionCode, deleteRedemptionCode, getRedemptionCodes } from '@/lib/actions/adminActions';
+import { AddQuestForm } from './AdminQuestForm';
 
 // First, let's add a proper type for the newCode state
 interface NewCode {
@@ -231,6 +232,13 @@ export default function AdminPanel() {
           </div>
         )}
       </div>
+      <div className="max-w-4xl mx-auto p-4">
+      <h1 className="text-3xl font-bold text-[#8b5e34] mb-8">Admin Panel</h1>
+      <div className="bg-white/50 rounded-lg p-6 border-2 border-[#DFD2BC]">
+        <h2 className="text-2xl font-bold text-[#6d4a29] mb-4">Add New Quest</h2>
+        <AddQuestForm />
+      </div>
+    </div>
     </div>
   );
 }

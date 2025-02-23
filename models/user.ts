@@ -20,6 +20,12 @@ interface IUser extends Document {
   lastActiveDate?: Date;
   isAdmin: boolean;
   dailyProgress: IDailyProgress[];
+  quests: [{
+    quest: Schema.Types.ObjectId;
+    progress: number;
+    completed: boolean;
+    lastUpdated: Date;
+  }];
 }
 
 const dailyProgressSchema = new Schema({
@@ -42,6 +48,12 @@ const userSchema = new Schema<IUser>({
   lastActiveDate: Date,
   isAdmin: { type: Boolean, default: false },
   dailyProgress: [dailyProgressSchema],
+  quests: [{
+    quest: { type: Schema.Types.ObjectId, ref: 'Quest' },
+    progress: { type: Number, default: 0 },
+    completed: { type: Boolean, default: false },
+    lastUpdated: { type: Date, default: Date.now }
+  }]
 });
 
 // Check if model already exists
