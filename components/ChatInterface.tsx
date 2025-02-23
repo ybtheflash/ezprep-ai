@@ -1,7 +1,16 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Loader2, Maximize2, Minimize2, Moon, Sun } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import {
+  Send,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  Moon,
+  Sun,
+  Mic,
+  StopCircle,
+} from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -15,16 +24,18 @@ export default function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
-
   useEffect(() => {
-    scrollToBottom();
-  }, [scrollToBottom]);
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -36,146 +47,136 @@ export default function ChatInterface() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage = {
-      role: "user" as const,
-      content: input.trim(),
-      timestamp: new Date(),
-    };
-
+    const userMessage: Message = { role: "user", content: input, timestamp: new Date() };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/aichat", {
+      const res = await fetch("/api/aichat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: userMessage.content,
-          userId: "default-user",
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage.content }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to get response");
-      }
-
+      const data = await res.json();
       setMessages((prev) => [
         ...prev,
-        {
-          role: "assistant",
-          content: data.response,
-          timestamp: new Date(),
-        },
+        { role: "assistant", content: data.response, timestamp: new Date() },
       ]);
-    } catch (error) {
-      const errorMessage = "Sorry, I encountered an error processing your request. Please try again.";
+    } catch {
       setMessages((prev) => [
         ...prev,
-        {
-          role: "assistant",
-          content: errorMessage,
-          timestamp: new Date(),
-        },
+        { role: "assistant", content: "An error occurred.", timestamp: new Date() },
       ]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const startRecording = async () => {
+    setIsRecording(true);
+    audioChunksRef.current = [];
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const formData = new FormData();
+        formData.append("audio", audioBlob);
+
+        try {
+          const res = await fetch("/api/ai/wispher", {
+            method: "POST",
+            body: formData,
+          });
+          const { text } = await res.json();
+          setInput(text);
+        } catch {
+          console.error("Error during transcription.");
+        } finally {
+          setIsRecording(false);
+        }
+      };
+
+      mediaRecorder.start();
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      setIsRecording(false);
+    }
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
   return (
     <div
-      ref={chatContainerRef}
-      className={`flex flex-col ${isFullscreen ? "h-screen" : "h-[calc(100vh-8rem)]"} max-w-4xl mx-auto border-2 border-[#8b5e34] rounded-lg shadow-lg overflow-hidden`}
+      className={`flex flex-col ${
+        isFullscreen ? "h-screen" : "h-[calc(100vh-4rem)]"
+      } max-w-4xl mx-auto border shadow-lg`}
     >
-      {/* Chat Header */}
-      <div className="bg-[#DFD2BC] p-4 flex justify-between items-center border-b-2 border-[#8b5e34]">
-        <div>
-          <h2 className="text-xl font-bold text-[#8b5e34]">AI Study Assistant</h2>
-          <p className="text-sm text-[#6d4a29]">Ask any academic questions - I&apos;m here to help!</p>
-        </div>
+      <header className="flex justify-between items-center p-4 bg-gray-100 border-b">
+        <h1 className="text-lg font-bold">AI Chat</h1>
         <div className="flex gap-2">
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="p-2 rounded-lg hover:bg-[#e6c199] text-[#8b5e34] transition-colors"
-            aria-label={isDarkMode ? "Light mode" : "Dark mode"}
-          >
-            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          <button onClick={toggleFullscreen}>
+            {isFullscreen ? <Minimize2 /> : <Maximize2 />}
           </button>
-          <button
-            onClick={toggleFullscreen}
-            className="p-2 rounded-lg hover:bg-[#e6c199] text-[#8b5e34] transition-colors"
-            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+          <button onClick={() => setIsDarkMode((prev) => !prev)}>
+            {isDarkMode ? <Sun /> : <Moon />}
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Messages Container */}
-      <div
-        className={`flex-1 overflow-y-auto p-4 ${isDarkMode ? "bg-[#5C4033] text-white" : "bg-[#fcf3e4]"} transition-colors`}
+      <main
+        ref={chatContainerRef}
+        className={`flex-1 overflow-y-auto p-4 ${
+          isDarkMode ? "bg-gray-800 text-white" : "bg-white text-black"
+        }`}
       >
-        {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            Start a conversation by typing your question below
-          </div>
-        ) : (
-          messages.map((message, index) => (
-            <div key={index} className={`mb-4 ${message.role === "user" ? "flex justify-end" : "flex justify-start"}`}>
-              <div
-                className={`max-w-[80%] rounded-lg p-3 ${
-                  message.role === "user" ? "bg-[#e6c199] text-[#8b5e34]" : "bg-[#DFD2BC] text-[#6d4a29]"
-                }`}
-              >
-                <p className="whitespace-pre-wrap">{message.content}</p>
-                <span className="text-xs opacity-50 mt-1 block">
-                  {new Date(message.timestamp).toLocaleTimeString()}
-                </span>
-              </div>
-            </div>
-          ))
-        )}
-        {isLoading && (
-          <div className="flex justify-start mb-4">
-            <div className="bg-[#DFD2BC] rounded-lg p-3">
-              <Loader2 className="w-5 h-5 animate-spin text-[#8b5e34]" />
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input Form */}
-      <form onSubmit={handleSubmit} className="bg-[#DFD2BC] p-4 border-t-2 border-[#8b5e34]">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your question here..."
-            className="flex-1 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#8b5e34] bg-white border-2 border-[#8b5e34]"
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`px-4 py-2 rounded-lg bg-[#8b5e34] text-white flex items-center gap-2 border-2 border-[#6d4a29]
-              ${isLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-[#6d4a29]"}
-            `}
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`my-2 ${
+              msg.role === "user" ? "text-right" : "text-left"
+            }`}
           >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-          </button>
-        </div>
-      </form>
+            <p className="inline-block p-2 rounded-md bg-gray-200">
+              {msg.content}
+            </p>
+          </div>
+        ))}
+      </main>
+
+      <footer className="flex items-center p-4 bg-gray-100 border-t">
+        <button
+          onClick={isRecording ? stopRecording : startRecording}
+          className="mr-4"
+        >
+          {isRecording ? <StopCircle /> : <Mic />}
+        </button>
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          className="flex-1 p-2 border rounded-md"
+          placeholder="Type a message..."
+        />
+        <button onClick={handleSend} disabled={isLoading}>
+          {isLoading ? <Loader2 className="animate-spin" /> : <Send />}
+        </button>
+      </footer>
     </div>
   );
 }
